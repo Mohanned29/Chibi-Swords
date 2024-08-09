@@ -1,10 +1,8 @@
 import pygame
 import sys
 
-# Initialize Pygame
 pygame.init()
 
-# Screen dimensions
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -39,31 +37,33 @@ bridge1 = load_and_scale_image("terrain/bridge1.png",180,80)
 bridge2 = load_and_scale_image("terrain/bridge2.png",180,80)
 bridgeShadow = load_and_scale_image("terrain/BridgeShadow.png",130,80)
 foam_images = [load_and_scale_image(f"terrain/Foam{i}.png", 140, 150) for i in range(1, 9)]
+archer_images = [load_and_scale_image(f"idleArcher/idle{i}.png", 50, 60) for i in range(1, 7)]
+knight_images = [load_and_scale_image(f"knightBlueRun/Warrior_Blue{i}.png", 50, 60) for i in range(1, 7)]
 
-# Animation variables
 foam_animation_index = 0
-foam_animation_speed = 0.1  # Adjust the speed of the foam animation
+foam_animation_speed = 0.1
 foam_animation_time = 0
 
+archer_animation_index = 0
+archer_animation_speed = 0.1
+archer_animation_time = 0
+
 def draw_scene():
-    global foam_animation_index, foam_animation_time
+    global foam_animation_index, foam_animation_time, archer_animation_index, archer_animation_time
 
-    # Draw the background
-    screen.blit(water, (0, 0))  # Correctly blit the water image
+    screen.blit(water, (0, 0))
 
-    # Draw the rest of the images
-    #screen.blit(sandBig, (600, 300))
 
-    # Draw the foam animation at the base of each object
     if pygame.time.get_ticks() > foam_animation_time:
         foam_animation_index = (foam_animation_index + 1) % len(foam_images)
         foam_animation_time = pygame.time.get_ticks() + int(1000 * foam_animation_speed)
-    
-    # Position the foam at the base
+
     screen.blit(foam_images[foam_animation_index], (70, 320))
     screen.blit(foam_images[foam_animation_index], (325, 320))
     screen.blit(foam_images[foam_animation_index], (580, 320))
     screen.blit(foam_images[foam_animation_index], (835, 320))
+
+
 
     screen.blit(base_img, (80, 300))
     screen.blit(base1_img, (80, 270))
@@ -79,32 +79,38 @@ def draw_scene():
     screen.blit(flat3_img, (845, 265))
     screen.blit(tower1_img, (85, 190))
     screen.blit(tower2_img, (865, 190))
-    #screen.blit(sand_img, (80, 400))
-    #screen.blit(sand1_img, (180, 400))
-    #screen.blit(borders_img, (80, 390))
-    #screen.blit(borders1_img, (120, 390))
     screen.blit(bridge, (180,275))
     screen.blit(bridge1, (435,275))
     screen.blit(bridge1, (690,275))
 
-    
 
-# Main game loop
+
+    if pygame.time.get_ticks() > archer_animation_time:
+        archer_animation_index = (archer_animation_index + 1) % len(archer_images)
+        archer_animation_time = pygame.time.get_ticks() + int(1000 * archer_animation_speed)
+
+    screen.blit(archer_images[archer_animation_index], (110, 180))
+
+
+    if pygame.time.get_ticks() > archer_animation_time:
+        archer_animation_index = (archer_animation_index + 1) % len(archer_images)
+        archer_animation_time = pygame.time.get_ticks() + int(1000 * archer_animation_speed)
+
+    screen.blit(knight_images[archer_animation_index], (180, 265))
+    
 def main():
     clock = pygame.time.Clock()
     running = True
 
     while running:
-        # Handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        # Draw the scene
         draw_scene()
 
-        pygame.display.flip()  # Update the display
-        clock.tick(60)  # Cap the frame rate at 60 FPS
+        pygame.display.flip()
+        clock.tick(60)
 
     pygame.quit()
     sys.exit()
