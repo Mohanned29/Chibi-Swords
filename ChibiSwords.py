@@ -34,6 +34,7 @@ foam_images = [load_and_scale_image(f"terrain/Foam{i}.png", 140, 150) for i in r
 archer_images = [load_and_scale_image(f"idleArcher/idle{i}.png", 50, 60) for i in range(1, 7)]
 knight_images = [load_and_scale_image(f"knightBlueRun/Warrior_Blue{i}.png", 50, 60) for i in range(1, 7)]
 torch_images = [load_and_scale_image(f"TorchRun/torch{i}.png", 60, 60) for i in range(1, 7)]
+torch_attack = [load_and_scale_image(f"TorchAttack/torch{i}.png", 60, 60) for i in range(1, 7)]
 
 foam_animation_index = 0
 foam_animation_speed = 0.1
@@ -49,8 +50,8 @@ knight_animation_time = 0
 torch_animation_speed = 0.15
 torch_animation_time = 0
 
-knights = [{"image_index": 0, "x": 180, "y": 265, "speed": 1}]
-torchs = [{"image_index": 0, "x": 865, "y": 265, "speed": -1}]
+knights = [{"image_index": 0, "x": 180, "y": 265, "speed": 1, "health": 100, "attack_power": 20}]
+torchs = [{"image_index": 0, "x": 865, "y": 265, "speed": -1, "health": 80, "attack_power": 30, "attacking": False, "attack_index": 0, "attack_done": False}]
 
 def kill(obj, obj_list):
     obj_list.remove(obj)
@@ -93,6 +94,7 @@ def draw_scene():
 
     screen.blit(archer_images[archer_animation_index], (110, 180))
 
+
     for knight in knights[:]:
         knight["x"] += knight["speed"]
 
@@ -102,20 +104,42 @@ def draw_scene():
 
         screen.blit(knight_images[knight["image_index"]], (knight["x"], knight["y"]))
 
+        for torch in torchs:
+            if abs(torch["x"] - knight["x"]) <= 35 and not torch["attacking"]:
+                torch["speed"] = 0
+                knight["speed"] = 0
+                torch["attacking"] = True
+                torch["attack_done"] = False
+
+            if torch["attacking"]:
+                if pygame.time.get_ticks() > torch_animation_time:
+                    torch["attack_index"] = (torch["attack_index"] + 1) % len(torch_attack)
+                    torch_animation_time = pygame.time.get_ticks() + int(1000 * torch_animation_speed)
+                
+                screen.blit(torch_attack[torch["attack_index"]], (torch["x"], torch["y"]))
+
+                if torch["attack_index"] == len(torch_attack) - 1 and not torch["attack_done"]:
+                    knight["health"] -= torch["attack_power"]
+                    torch["attack_done"] = True
+
+                    if knight["health"] <= 0:
+                        kill(knight, knights)
+                        torch["speed"] = -1
+                        torch["attacking"] = False
+                    else:
+                        torch["attack_index"] = -1
+
+            else:
+                torch["x"] += torch["speed"]
+
+                if pygame.time.get_ticks() > torch_animation_time:
+                    torch["image_index"] = (torch["image_index"] + 1) % len(torch_images)
+                    torch_animation_time = pygame.time.get_ticks() + int(1000 * torch_animation_speed)
+
+                screen.blit(torch_images[torch["image_index"]], (torch["x"], torch["y"]))
+
         if knight["x"] >= 865:
             kill(knight, knights)
-
-    for torch in torchs[:]:
-        torch["x"] += torch["speed"]
-
-        if pygame.time.get_ticks() > torch_animation_time:
-            torch["image_index"] = (torch["image_index"] + 1) % len(torch_images)
-            torch_animation_time = pygame.time.get_ticks() + int(1000 * torch_animation_speed)
-
-        screen.blit(torch_images[torch["image_index"]], (torch["x"], torch["y"]))
-
-        if torch["x"] <= 85:
-            kill(torch, torchs)
 
 def main():
     clock = pygame.time.Clock()
